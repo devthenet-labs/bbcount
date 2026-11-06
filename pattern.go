@@ -72,9 +72,8 @@ func (p pattern) counts() []int {
 func (p pattern) stepsPlayed() [][]int {
 	out := make([][]int, len(trackNames))
 	for i, name := range trackNames {
-		track := p.Tracks[name]
-		for step := 0; step < len(track)-1; step++ {
-			if track[step] {
+		for step, on := range p.Tracks[name] {
+			if on {
 				out[i] = append(out[i], step+1)
 			}
 		}
