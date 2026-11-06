@@ -25,6 +25,13 @@ func TestRunCounts(t *testing.T) {
 	}{
 		{"text", nil, fourOnFloor, 0, "kick 4\nsnare 2\nhat 8\ntotal 14\n", ""},
 		{"json", []string{"-json"}, fourOnFloor, 0, `{"kick":4,"snare":2,"hat":8,"total":14}` + "\n", ""},
+		{"-steps", []string{"-steps"}, fourOnFloor, 0, "kick 4\nsnare 2\nhat 8\ntotal 14\n" +
+			"kick: 1 5 9 13\nsnare: 5 13\nhat: 1 3 5 7 9 11 13 15\n", ""},
+		{"-steps no hits", []string{"-steps"}, strings.Replace(fourOnFloor,
+			`"snare":[false,false,false,false,true,false,false,false,false,false,false,false,true,false,false,false]`,
+			`"snare":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false]`, 1),
+			0, "kick 4\nsnare 0\nhat 8\ntotal 12\n" +
+				"kick: 1 5 9 13\nsnare: -\nhat: 1 3 5 7 9 11 13 15\n", ""},
 		{"bad json", nil, `{`, 1, "", "invalid pattern"},
 		{"unknown field", nil, strings.Replace(fourOnFloor, `"bpm"`, `"tempo":1,"bpm"`, 1), 1, "", "invalid pattern"},
 		{"bpm low", nil, strings.Replace(fourOnFloor, `"bpm":120`, `"bpm":59`, 1), 1, "", "bpm"},

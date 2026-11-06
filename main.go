@@ -22,10 +22,11 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("bbcount", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	fs.Usage = func() {
-		fmt.Fprintln(stderr, "usage: bbcount [-json] [-wav out.wav] [pattern.json]")
+		fmt.Fprintln(stderr, "usage: bbcount [-json] [-steps] [-wav out.wav] [pattern.json]")
 		fs.PrintDefaults()
 	}
 	asJSON := fs.Bool("json", false, "print the counts as one JSON object")
+	stepsFlag := fs.Bool("steps", false, "also print the 1-based step numbers each track plays")
 	wavPath := fs.String("wav", "", "also write the pattern as a WAV file to this path")
 	if err := fs.Parse(args); err != nil {
 		return 2
@@ -52,6 +53,9 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 
 	printCounts(stdout, p, *asJSON)
+	if *stepsFlag {
+		printSteps(stdout, p)
+	}
 	if *wavPath != "" {
 		if err := os.WriteFile(*wavPath, render(p), 0o644); err != nil {
 			fmt.Fprintln(stderr, "bbcount:", err)
@@ -81,4 +85,21 @@ func printCounts(w io.Writer, p pattern, asJSON bool) {
 		fmt.Fprintf(w, "%s %d\n", name, counts[i])
 	}
 	fmt.Fprintf(w, "total %d\n", total)
+}
+
+// printSteps prints the 1-based step numbers each track plays, one line per
+// track in the usual order; a track that plays no step prints "-".
+func printSteps(w io.Writer, p pattern) {
+	stepsPlayed := p.stepsPlayed()
+	for i, name := range trackNames {
+		fmt.Fprintf(w, "%s:", name)
+		played := stepsPlayed[i]
+		if len(played) == 0 {
+			fmt.Fprint(w, " -")
+		}
+		for _, step := range played {
+			fmt.Fprintf(w, " %d", step)
+		}
+		fmt.Fprintln(w)
+	}
 }
