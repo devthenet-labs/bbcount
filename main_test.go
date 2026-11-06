@@ -25,6 +25,8 @@ func TestRunCounts(t *testing.T) {
 	}{
 		{"text", nil, fourOnFloor, 0, "kick 4\nsnare 2\nhat 8\ntotal 14\n", ""},
 		{"json", []string{"-json"}, fourOnFloor, 0, `{"kick":4,"snare":2,"hat":8,"total":14}` + "\n", ""},
+		{"csv", []string{"-csv"}, fourOnFloor, 0, "track,steps\nkick,4\nsnare,2\nhat,8\ntotal,14\n", ""},
+		{"csv and json", []string{"-csv", "-json"}, "", 2, "", "usage"},
 		{"bad json", nil, `{`, 1, "", "invalid pattern"},
 		{"unknown field", nil, strings.Replace(fourOnFloor, `"bpm"`, `"tempo":1,"bpm"`, 1), 1, "", "invalid pattern"},
 		{"bpm low", nil, strings.Replace(fourOnFloor, `"bpm":120`, `"bpm":59`, 1), 1, "", "bpm"},
