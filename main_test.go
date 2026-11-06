@@ -35,6 +35,9 @@ func TestRunCounts(t *testing.T) {
 		{"bad flag", []string{"-nope"}, "", 2, "", "usage"},
 		{"two files", []string{"a", "b"}, "", 2, "", "usage"},
 		{"missing file", []string{filepath.Join(t.TempDir(), "none.json")}, "", 1, "", "none.json"},
+		{"flag bpm low", []string{"-bpm", "59"}, "", 2, "", "usage"},
+		{"flag bpm high", []string{"-bpm", "201"}, "", 2, "", "usage"},
+		{"bpm override no wav", []string{"-bpm", "90"}, fourOnFloor, 0, "kick 4\nsnare 2\nhat 8\ntotal 14\n", ""},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -95,6 +98,25 @@ func TestRunWritesWAV(t *testing.T) {
 	}
 	if got := binary.LittleEndian.Uint16(b[34:36]); got != 16 {
 		t.Errorf("bits %d", got)
+	}
+}
+
+func TestRunWritesWAVWithBPMOverride(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "beat.wav")
+	var out, errb bytes.Buffer
+	if code := run([]string{"-bpm", "60", "-wav", path}, strings.NewReader(fourOnFloor), &out, &errb); code != 0 {
+		t.Fatalf("exit %d: %s", code, errb.String())
+	}
+	// halving 120 bpm to 60 bpm doubles the 2000 ms duration to 4000 ms.
+	if want := "kick 4\nsnare 2\nhat 8\ntotal 14\nwrote " + path + " (4000 ms)\n"; out.String() != want {
+		t.Errorf("stdout %q, want %q", out.String(), want)
+	}
+	b, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(b) != 44+2*44100*4 {
+		t.Fatalf("wav is %d bytes, want %d", len(b), 44+2*44100*4)
 	}
 }
 

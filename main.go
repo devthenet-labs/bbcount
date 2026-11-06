@@ -22,15 +22,26 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("bbcount", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	fs.Usage = func() {
-		fmt.Fprintln(stderr, "usage: bbcount [-json] [-wav out.wav] [pattern.json]")
+		fmt.Fprintln(stderr, "usage: bbcount [-json] [-bpm bpm] [-wav out.wav] [pattern.json]")
 		fs.PrintDefaults()
 	}
 	asJSON := fs.Bool("json", false, "print the counts as one JSON object")
+	bpm := fs.Int("bpm", 0, "render the WAV at this tempo instead of the pattern's own, 60-200")
 	wavPath := fs.String("wav", "", "also write the pattern as a WAV file to this path")
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
 	if fs.NArg() > 1 {
+		fs.Usage()
+		return 2
+	}
+	bpmSet := false
+	fs.Visit(func(f *flag.Flag) {
+		if f.Name == "bpm" {
+			bpmSet = true
+		}
+	})
+	if bpmSet && (*bpm < 60 || *bpm > 200) {
 		fs.Usage()
 		return 2
 	}
@@ -53,11 +64,15 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 
 	printCounts(stdout, p, *asJSON)
 	if *wavPath != "" {
-		if err := os.WriteFile(*wavPath, render(p), 0o644); err != nil {
+		renderP := p
+		if bpmSet {
+			renderP.BPM = *bpm
+		}
+		if err := os.WriteFile(*wavPath, render(renderP), 0o644); err != nil {
 			fmt.Fprintln(stderr, "bbcount:", err)
 			return 1
 		}
-		fmt.Fprintf(stdout, "wrote %s (%d ms)\n", *wavPath, durationMs(p.BPM))
+		fmt.Fprintf(stdout, "wrote %s (%d ms)\n", *wavPath, durationMs(renderP.BPM))
 	}
 	return 0
 }
