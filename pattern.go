@@ -55,10 +55,10 @@ func parsePattern(r io.Reader) (pattern, error) {
 	return p, nil
 }
 
-// counts returns the number of active steps per track, in trackNames order.
-func (p pattern) counts() []int {
-	out := make([]int, len(trackNames))
-	for i, name := range trackNames {
+// counts returns the number of active steps for the given tracks, in that order.
+func (p pattern) counts(tracks []string) []int {
+	out := make([]int, len(tracks))
+	for i, name := range tracks {
 		for _, on := range p.Tracks[name] {
 			if on {
 				out[i]++
