@@ -21,7 +21,8 @@ hat 8
 total 14
 ```
 
-`-json` prints `{"kick":4,"snare":2,"hat":8,"total":14}` instead. With `-wav out.wav` the counts are followed by
+`-json` prints `{"kick":4,"snare":2,"hat":8,"total":14}` instead. `-csv` prints a `track,steps` header followed by
+one `kick,4` / `snare,2` / `hat,8` / `total,14` line per row instead. With `-wav out.wav` the counts are followed by
 `wrote out.wav (2000 ms)`, the rendered length in whole milliseconds (sixteen sixteenth notes at the pattern's bpm).
 The WAV is deterministic: the same pattern always gives the same bytes. Swing delays every odd step by that percent of
 a step.
