@@ -67,3 +67,16 @@ func (p pattern) counts() []int {
 	}
 	return out
 }
+
+// stepsPlayed returns the 1-based step numbers each track plays, in trackNames order.
+func (p pattern) stepsPlayed() [][]int {
+	out := make([][]int, len(trackNames))
+	for i, name := range trackNames {
+		for step, on := range p.Tracks[name] {
+			if on {
+				out[i] = append(out[i], step+1)
+			}
+		}
+	}
+	return out
+}

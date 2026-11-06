@@ -11,6 +11,7 @@ pattern to a mono 16-bit 44100 Hz WAV file. It is the CLI fixture for the agent 
 go build -o bbcount .
 ./bbcount pattern.json
 ./bbcount -json < pattern.json
+./bbcount -steps pattern.json
 ./bbcount -wav beat.wav pattern.json
 ```
 
@@ -21,7 +22,9 @@ hat 8
 total 14
 ```
 
-`-json` prints `{"kick":4,"snare":2,"hat":8,"total":14}` instead. With `-wav out.wav` the counts are followed by
+`-json` prints `{"kick":4,"snare":2,"hat":8,"total":14}` instead. `-steps` additionally prints one line per track
+with the 1-based step numbers it plays, e.g. `kick: 1 5 9 13`, or `-` if it plays none, e.g. `snare: -`. With
+`-wav out.wav` the counts are followed by
 `wrote out.wav (2000 ms)`, the rendered length in whole milliseconds (sixteen sixteenth notes at the pattern's bpm).
 The WAV is deterministic: the same pattern always gives the same bytes. Swing delays every odd step by that percent of
 a step.
