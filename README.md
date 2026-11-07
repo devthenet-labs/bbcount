@@ -12,6 +12,7 @@ go build -o bbcount .
 ./bbcount pattern.json
 ./bbcount -json < pattern.json
 ./bbcount -wav beat.wav pattern.json
+./bbcount -tracks kick,hat pattern.json
 ```
 
 ```text
@@ -21,10 +22,18 @@ hat 8
 total 14
 ```
 
+```text
+kick 4
+hat 8
+total 12
+```
+
 `-json` prints `{"kick":4,"snare":2,"hat":8,"total":14}` instead. With `-wav out.wav` the counts are followed by
 `wrote out.wav (2000 ms)`, the rendered length in whole milliseconds (sixteen sixteenth notes at the pattern's bpm).
 The WAV is deterministic: the same pattern always gives the same bytes. Swing delays every odd step by that percent of
-a step.
+a step. `-tracks kick,hat` (any subset of `kick`, `snare`, `hat`, comma-separated, in any order) limits the printed
+lines, the `-json` object and the `total` to just those tracks; a name that is not one of the three is a usage error.
+Without `-tracks` every track is printed, as before.
 
 The pattern is Beat Battle's shared JSON: `name`, `author`, integer `bpm` 60-200, integer `swing` 0-60 and `tracks`
 with exactly `kick`, `snare` and `hat`, 16 booleans each; `id`, `votes` and `createdAt` are accepted and ignored,
