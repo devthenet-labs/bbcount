@@ -25,6 +25,8 @@ func TestRunCounts(t *testing.T) {
 	}{
 		{"text", nil, fourOnFloor, 0, "kick 4\nsnare 2\nhat 8\ntotal 14\n", ""},
 		{"json", []string{"-json"}, fourOnFloor, 0, `{"kick":4,"snare":2,"hat":8,"total":14}` + "\n", ""},
+		{"density", []string{"-density"}, fourOnFloor, 0, "kick 4\nsnare 2\nhat 8\ntotal 14\ndensity 29%\n", ""},
+		{"density json", []string{"-density", "-json"}, fourOnFloor, 0, `{"kick":4,"snare":2,"hat":8,"total":14,"density":29}` + "\n", ""},
 		{"bad json", nil, `{`, 1, "", "invalid pattern"},
 		{"unknown field", nil, strings.Replace(fourOnFloor, `"bpm"`, `"tempo":1,"bpm"`, 1), 1, "", "invalid pattern"},
 		{"bpm low", nil, strings.Replace(fourOnFloor, `"bpm":120`, `"bpm":59`, 1), 1, "", "bpm"},
@@ -48,6 +50,36 @@ func TestRunCounts(t *testing.T) {
 			}
 			if !strings.Contains(errb.String(), tc.wantErr) {
 				t.Errorf("stderr %q lacks %q", errb.String(), tc.wantErr)
+			}
+		})
+	}
+}
+
+const sevenSteps = `{"name":"Seven","author":"me","bpm":120,"swing":0,"tracks":{
+"kick":[true,false,false,false,true,false,false,false,true,false,false,false,false,false,false,false],
+"snare":[true,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false],
+"hat":[true,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false]}}`
+
+const noSteps = `{"name":"None","author":"me","bpm":120,"swing":0,"tracks":{
+"kick":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],
+"snare":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],
+"hat":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false]}}`
+
+func TestRunDensityRounding(t *testing.T) {
+	tests := []struct {
+		name, stdin, wantSuffix string
+	}{
+		{"seven steps", sevenSteps, "total 7\ndensity 15%\n"},
+		{"no steps", noSteps, "total 0\ndensity 0%\n"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var out, errb bytes.Buffer
+			if code := run([]string{"-density"}, strings.NewReader(tc.stdin), &out, &errb); code != 0 {
+				t.Fatalf("exit %d: %s", code, errb.String())
+			}
+			if !strings.HasSuffix(out.String(), tc.wantSuffix) {
+				t.Errorf("stdout %q, want suffix %q", out.String(), tc.wantSuffix)
 			}
 		})
 	}
