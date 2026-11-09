@@ -55,6 +55,13 @@ func parsePattern(r io.Reader) (pattern, error) {
 	return p, nil
 }
 
+// densityPercent rounds the share of all steps that play (out of steps *
+// len(trackNames) total) to a whole percent, half up.
+func densityPercent(total int) int {
+	totalSteps := steps * len(trackNames)
+	return (200*total + totalSteps) / (2 * totalSteps)
+}
+
 // counts returns the number of active steps per track, in trackNames order.
 func (p pattern) counts() []int {
 	out := make([]int, len(trackNames))
