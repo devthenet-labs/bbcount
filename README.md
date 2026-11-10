@@ -11,6 +11,7 @@ pattern to a mono 16-bit 44100 Hz WAV file. It is the CLI fixture for the agent 
 go build -o bbcount .
 ./bbcount pattern.json
 ./bbcount -json < pattern.json
+./bbcount -first pattern.json
 ./bbcount -wav beat.wav pattern.json
 ```
 
@@ -24,12 +25,14 @@ total 14
 `-json` prints `{"kick":4,"snare":2,"hat":8,"total":14}` instead. With `-wav out.wav` the counts are followed by
 `wrote out.wav (2000 ms)`, the rendered length in whole milliseconds (sixteen sixteenth notes at the pattern's bpm).
 The WAV is deterministic: the same pattern always gives the same bytes. Swing delays every odd step by that percent of
-a step.
+a step. With `-first`, an additional `first <track> N` line follows `total` for each track (kick, snare, hat order),
+where N is the 1-based first step that track plays, or `none` if it plays none; `-first` together with `-json` is a
+usage error (exit 2).
 
 The pattern is Beat Battle's shared JSON: `name`, `author`, integer `bpm` 60-200, integer `swing` 0-60 and `tracks`
 with exactly `kick`, `snare` and `hat`, 16 booleans each; `id`, `votes` and `createdAt` are accepted and ignored,
 any other field is rejected. Exit codes: 0 success, 1 an unreadable or invalid pattern (a message on stderr) or a
-write failure, 2 a usage error.
+write failure, 2 a usage error (an unknown flag, more than one file argument, or `-first` with `-json`).
 
 ## Develop
 
