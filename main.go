@@ -1,8 +1,8 @@
 // bbcount is Beat Battle's pattern counter, a small command-line tool: it
 // reads one pattern JSON (a file argument, else standard input), prints how
 // many steps each track plays and, with -wav, writes the pattern as a WAV
-// file. It is the CLI fixture for maul's agent evaluator, and uses the
-// standard library only.
+// file. With -first, it also prints where each track first plays. It is the
+// CLI fixture for maul's agent evaluator, and uses the standard library only.
 package main
 
 import (
@@ -22,12 +22,17 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("bbcount", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	fs.Usage = func() {
-		fmt.Fprintln(stderr, "usage: bbcount [-json] [-wav out.wav] [pattern.json]")
+		fmt.Fprintln(stderr, "usage: bbcount [-json] [-first] [-wav out.wav] [pattern.json]")
 		fs.PrintDefaults()
 	}
 	asJSON := fs.Bool("json", false, "print the counts as one JSON object")
+	first := fs.Bool("first", false, "also print the first step each track plays")
 	wavPath := fs.String("wav", "", "also write the pattern as a WAV file to this path")
 	if err := fs.Parse(args); err != nil {
+		return 2
+	}
+	if *first && *asJSON {
+		fs.Usage()
 		return 2
 	}
 	if fs.NArg() > 1 {
@@ -51,7 +56,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 1
 	}
 
-	printCounts(stdout, p, *asJSON)
+	printCounts(stdout, p, *asJSON, *first)
 	if *wavPath != "" {
 		if err := os.WriteFile(*wavPath, render(p), 0o644); err != nil {
 			fmt.Fprintln(stderr, "bbcount:", err)
@@ -63,7 +68,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 }
 
 // printCounts prints the per-track step counts and their total.
-func printCounts(w io.Writer, p pattern, asJSON bool) {
+func printCounts(w io.Writer, p pattern, asJSON, first bool) {
 	counts := p.counts()
 	total := 0
 	for _, c := range counts {
@@ -81,4 +86,14 @@ func printCounts(w io.Writer, p pattern, asJSON bool) {
 		fmt.Fprintf(w, "%s %d\n", name, counts[i])
 	}
 	fmt.Fprintf(w, "total %d\n", total)
+	if first {
+		for _, name := range trackNames {
+			step := p.firstStep(name)
+			if step < 0 {
+				fmt.Fprintf(w, "first %s none\n", name)
+				continue
+			}
+			fmt.Fprintf(w, "first %s %d\n", name, step+1)
+		}
+	}
 }

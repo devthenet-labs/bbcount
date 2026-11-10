@@ -35,6 +35,9 @@ func TestRunCounts(t *testing.T) {
 		{"bad flag", []string{"-nope"}, "", 2, "", "usage"},
 		{"two files", []string{"a", "b"}, "", 2, "", "usage"},
 		{"missing file", []string{filepath.Join(t.TempDir(), "none.json")}, "", 1, "", "none.json"},
+		{"first", []string{"-first"}, fourOnFloor, 0, "kick 4\nsnare 2\nhat 8\ntotal 14\nfirst kick 1\nfirst snare 5\nfirst hat 1\n", ""},
+		{"first none", []string{"-first"}, strings.Replace(fourOnFloor, `"hat":[true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false]`, `"hat":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false]`, 1), 0, "kick 4\nsnare 2\nhat 0\ntotal 6\nfirst kick 1\nfirst snare 5\nfirst hat none\n", ""},
+		{"first and json", []string{"-first", "-json"}, fourOnFloor, 2, "", "usage"},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -115,6 +118,30 @@ func TestRenderDeterministicAndSilentOnEmpty(t *testing.T) {
 	}
 	if !bytes.Equal(render(empty)[44:], make([]byte, 2*44100*2)) {
 		t.Error("an empty pattern must render silence")
+	}
+}
+
+func TestFirstStep(t *testing.T) {
+	p, err := parsePattern(strings.NewReader(fourOnFloor))
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		name string
+		want int
+	}{
+		{"kick", 0},
+		{"snare", 4},
+		{"hat", 0},
+	}
+	for _, tc := range tests {
+		if got := p.firstStep(tc.name); got != tc.want {
+			t.Errorf("firstStep(%q) = %d, want %d", tc.name, got, tc.want)
+		}
+	}
+	empty := pattern{Tracks: map[string][]bool{"kick": make([]bool, steps)}}
+	if got := empty.firstStep("kick"); got != -1 {
+		t.Errorf("firstStep on an all-false track = %d, want -1", got)
 	}
 }
 
