@@ -21,10 +21,13 @@ hat 8
 total 14
 ```
 
-`-json` prints `{"kick":4,"snare":2,"hat":8,"total":14}` instead. With `-wav out.wav` the counts are followed by
-`wrote out.wav (2000 ms)`, the rendered length in whole milliseconds (sixteen sixteenth notes at the pattern's bpm).
-The WAV is deterministic: the same pattern always gives the same bytes. Swing delays every odd step by that percent of
-a step.
+`-json` prints `{"kick":4,"snare":2,"hat":8,"total":14}` instead. With `-busiest` one more line is printed,
+`busiest <track>`, naming the track that plays the most steps (`busiest hat` for the example above); when two or
+three tracks tie it names all of them in kick, snare, hat order separated by commas with no spaces
+(`busiest kick,hat`), and a pattern with no steps prints `busiest none`. With `-wav out.wav` the counts are followed
+by `wrote out.wav (2000 ms)`, the rendered length in whole milliseconds (sixteen sixteenth notes at the pattern's
+bpm). The WAV is deterministic: the same pattern always gives the same bytes. Swing delays every odd step by that
+percent of a step.
 
 The pattern is Beat Battle's shared JSON: `name`, `author`, integer `bpm` 60-200, integer `swing` 0-60 and `tracks`
 with exactly `kick`, `snare` and `hat`, 16 booleans each; `id`, `votes` and `createdAt` are accepted and ignored,
