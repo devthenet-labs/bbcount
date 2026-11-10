@@ -67,3 +67,29 @@ func (p pattern) counts() []int {
 	}
 	return out
 }
+
+// busiest names the track, or every tied track in trackNames order
+// joined by commas, with the most steps, or "none" if no track plays
+// a step.
+func (p pattern) busiest() string {
+	counts := p.counts()
+	max := 0
+	for _, c := range counts {
+		if c > max {
+			max = c
+		}
+	}
+	if max == 0 {
+		return "none"
+	}
+	out := ""
+	for i, name := range trackNames {
+		if counts[i] == max {
+			if out != "" {
+				out += ","
+			}
+			out += name
+		}
+	}
+	return out
+}

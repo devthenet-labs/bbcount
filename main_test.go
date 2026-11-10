@@ -25,6 +25,8 @@ func TestRunCounts(t *testing.T) {
 	}{
 		{"text", nil, fourOnFloor, 0, "kick 4\nsnare 2\nhat 8\ntotal 14\n", ""},
 		{"json", []string{"-json"}, fourOnFloor, 0, `{"kick":4,"snare":2,"hat":8,"total":14}` + "\n", ""},
+		{"busiest", []string{"-busiest"}, fourOnFloor, 0, "kick 4\nsnare 2\nhat 8\ntotal 14\nbusiest hat\n", ""},
+		{"busiest json", []string{"-busiest", "-json"}, fourOnFloor, 0, "{\"kick\":4,\"snare\":2,\"hat\":8,\"total\":14}\nbusiest hat\n", ""},
 		{"bad json", nil, `{`, 1, "", "invalid pattern"},
 		{"unknown field", nil, strings.Replace(fourOnFloor, `"bpm"`, `"tempo":1,"bpm"`, 1), 1, "", "invalid pattern"},
 		{"bpm low", nil, strings.Replace(fourOnFloor, `"bpm":120`, `"bpm":59`, 1), 1, "", "bpm"},
@@ -115,6 +117,39 @@ func TestRenderDeterministicAndSilentOnEmpty(t *testing.T) {
 	}
 	if !bytes.Equal(render(empty)[44:], make([]byte, 2*44100*2)) {
 		t.Error("an empty pattern must render silence")
+	}
+}
+
+func trackWithCount(n int) []bool {
+	track := make([]bool, steps)
+	for i := 0; i < n; i++ {
+		track[i] = true
+	}
+	return track
+}
+
+func TestPatternBusiest(t *testing.T) {
+	tests := []struct {
+		name             string
+		kick, snare, hat int
+		want             string
+	}{
+		{"single", 4, 2, 8, "hat"},
+		{"two way tie", 4, 0, 4, "kick,hat"},
+		{"three way tie", 2, 2, 2, "kick,snare,hat"},
+		{"none", 0, 0, 0, "none"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			p := pattern{Tracks: map[string][]bool{
+				"kick":  trackWithCount(tc.kick),
+				"snare": trackWithCount(tc.snare),
+				"hat":   trackWithCount(tc.hat),
+			}}
+			if got := p.busiest(); got != tc.want {
+				t.Errorf("busiest() = %q, want %q", got, tc.want)
+			}
+		})
 	}
 }
 

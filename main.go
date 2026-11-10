@@ -1,8 +1,9 @@
 // bbcount is Beat Battle's pattern counter, a small command-line tool: it
 // reads one pattern JSON (a file argument, else standard input), prints how
-// many steps each track plays and, with -wav, writes the pattern as a WAV
-// file. It is the CLI fixture for maul's agent evaluator, and uses the
-// standard library only.
+// many steps each track plays, with -busiest also names the track that
+// plays the most steps and, with -wav, writes the pattern as a WAV file. It
+// is the CLI fixture for maul's agent evaluator, and uses the standard
+// library only.
 package main
 
 import (
@@ -22,9 +23,10 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("bbcount", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	fs.Usage = func() {
-		fmt.Fprintln(stderr, "usage: bbcount [-json] [-wav out.wav] [pattern.json]")
+		fmt.Fprintln(stderr, "usage: bbcount [-busiest] [-json] [-wav out.wav] [pattern.json]")
 		fs.PrintDefaults()
 	}
+	busiest := fs.Bool("busiest", false, "also print which track plays the most steps")
 	asJSON := fs.Bool("json", false, "print the counts as one JSON object")
 	wavPath := fs.String("wav", "", "also write the pattern as a WAV file to this path")
 	if err := fs.Parse(args); err != nil {
@@ -52,6 +54,9 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 
 	printCounts(stdout, p, *asJSON)
+	if *busiest {
+		fmt.Fprintln(stdout, "busiest "+p.busiest())
+	}
 	if *wavPath != "" {
 		if err := os.WriteFile(*wavPath, render(p), 0o644); err != nil {
 			fmt.Fprintln(stderr, "bbcount:", err)
