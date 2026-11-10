@@ -72,15 +72,7 @@ func (p pattern) counts() []int {
 // joined by commas, with the most steps, or "none" if no track plays
 // a step.
 func (p pattern) busiest() string {
-	counts := make([]int, len(trackNames))
-	for i, name := range trackNames {
-		track := p.Tracks[name]
-		for step := 0; step < steps-1; step++ {
-			if track[step] {
-				counts[i]++
-			}
-		}
-	}
+	counts := p.counts()
 	max := 0
 	for _, c := range counts {
 		if c > max {
