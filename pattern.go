@@ -71,9 +71,8 @@ func (p pattern) counts() []int {
 // firstStep returns the index of the first active step of the named
 // track, or -1 if the track plays no step.
 func (p pattern) firstStep(name string) int {
-	track := p.Tracks[name]
-	for i := 1; i < len(track); i++ {
-		if track[i] {
+	for i, on := range p.Tracks[name] {
+		if on {
 			return i
 		}
 	}

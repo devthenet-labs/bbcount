@@ -35,8 +35,8 @@ func TestRunCounts(t *testing.T) {
 		{"bad flag", []string{"-nope"}, "", 2, "", "usage"},
 		{"two files", []string{"a", "b"}, "", 2, "", "usage"},
 		{"missing file", []string{filepath.Join(t.TempDir(), "none.json")}, "", 1, "", "none.json"},
-		{"first", []string{"-first"}, fourOnFloor, 0, "kick 4\nsnare 2\nhat 8\ntotal 14\nfirst kick 5\nfirst snare 5\nfirst hat 3\n", ""},
-		{"first none", []string{"-first"}, strings.Replace(fourOnFloor, `"hat":[true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false]`, `"hat":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false]`, 1), 0, "kick 4\nsnare 2\nhat 0\ntotal 6\nfirst kick 5\nfirst snare 5\nfirst hat none\n", ""},
+		{"first", []string{"-first"}, fourOnFloor, 0, "kick 4\nsnare 2\nhat 8\ntotal 14\nfirst kick 1\nfirst snare 5\nfirst hat 1\n", ""},
+		{"first none", []string{"-first"}, strings.Replace(fourOnFloor, `"hat":[true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false]`, `"hat":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false]`, 1), 0, "kick 4\nsnare 2\nhat 0\ntotal 6\nfirst kick 1\nfirst snare 5\nfirst hat none\n", ""},
 		{"first and json", []string{"-first", "-json"}, fourOnFloor, 2, "", "usage"},
 	}
 	for _, tc := range tests {
@@ -130,9 +130,9 @@ func TestFirstStep(t *testing.T) {
 		name string
 		want int
 	}{
-		{"kick", 4},
+		{"kick", 0},
 		{"snare", 4},
-		{"hat", 2},
+		{"hat", 0},
 	}
 	for _, tc := range tests {
 		if got := p.firstStep(tc.name); got != tc.want {
