@@ -8,16 +8,24 @@ import (
 // longestRest returns the length of the longest run of inactive steps in a
 // track. It does not wrap around from the last step to the first.
 func longestRest(track []bool) int {
-	best, cur := 0, 0
-	for _, on := range track {
-		if on {
-			cur = 0
+	first, last, best := -1, -1, 0
+	for i, on := range track {
+		if !on {
 			continue
 		}
-		cur++
-		if cur > best {
-			best = cur
+		if first < 0 {
+			first = i
+		} else if gap := i - last - 1; gap > best {
+			best = gap
 		}
+		last = i
+	}
+	if first < 0 {
+		return len(track)
+	}
+	// The steps before the first hit and after the last one.
+	if edge := first + len(track) - 1 - last; edge > best {
+		best = edge
 	}
 	return best
 }
