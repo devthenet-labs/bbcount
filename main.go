@@ -22,11 +22,12 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("bbcount", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	fs.Usage = func() {
-		fmt.Fprintln(stderr, "usage: bbcount [-json] [-wav out.wav] [pattern.json]")
+		fmt.Fprintln(stderr, "usage: bbcount [-json] [-beats] [-wav out.wav] [pattern.json]")
 		fs.PrintDefaults()
 	}
 	asJSON := fs.Bool("json", false, "print the counts as one JSON object")
 	wavPath := fs.String("wav", "", "also write the pattern as a WAV file to this path")
+	beats := fs.Bool("beats", false, "also print how many steps each track plays in each of the four beats")
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
@@ -51,7 +52,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 1
 	}
 
-	printCounts(stdout, p, *asJSON)
+	printReport(stdout, p, *asJSON, *beats)
 	if *wavPath != "" {
 		if err := os.WriteFile(*wavPath, render(p), 0o644); err != nil {
 			fmt.Fprintln(stderr, "bbcount:", err)
