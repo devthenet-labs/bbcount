@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -66,5 +67,30 @@ func TestTogetherWithWAV(t *testing.T) {
 	want := "kick 4\nsnare 2\nhat 8\ntotal 14\ntogether 4\nwrote " + path + " (2000 ms)\n"
 	if out.String() != want {
 		t.Errorf("got %q, want %q", out.String(), want)
+	}
+}
+
+func TestTogetherFileArg(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "p.json")
+	if err := os.WriteFile(path, []byte(fourOnFloor), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		args []string
+		want string
+	}{
+		{[]string{"-together", path}, "kick 4\nsnare 2\nhat 8\ntotal 14\ntogether 4\n"},
+		{[]string{"-together", "-json", path}, `{"kick":4,"snare":2,"hat":8,"total":14,"together":4}` + "\n"},
+		{[]string{"-json", path}, `{"kick":4,"snare":2,"hat":8,"total":14}` + "\n"},
+		{[]string{path}, "kick 4\nsnare 2\nhat 8\ntotal 14\n"},
+	}
+	for _, tc := range tests {
+		var out, errb strings.Builder
+		if code := run(tc.args, strings.NewReader(""), &out, &errb); code != 0 {
+			t.Fatalf("%v: code %d, stderr %q", tc.args, code, errb.String())
+		}
+		if out.String() != tc.want {
+			t.Errorf("%v: got %q, want %q", tc.args, out.String(), tc.want)
+		}
 	}
 }

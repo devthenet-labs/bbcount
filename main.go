@@ -42,7 +42,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 			fmt.Fprintln(stderr, "bbcount:", err)
 			return 1
 		}
-		return report(stdout, stderr, p, *wavPath, *showTogether, *asJSON)
+		return report(stdout, stderr, p, *wavPath, *asJSON, *showTogether)
 	}
 	p, err := parsePattern(stdin)
 	if err != nil {
