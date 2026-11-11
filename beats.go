@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"strings"
 )
 
 // beats returns, per track in trackNames order, how many steps play in each of
@@ -37,18 +38,20 @@ func printReport(w io.Writer, p pattern, asJSON, withBeats bool) {
 	}
 	counts := p.counts()
 	total := 0
-	out := "{"
+	var sb strings.Builder
+	sb.WriteString("{")
 	for i, name := range trackNames {
 		total += counts[i]
-		out += fmt.Sprintf("%q:%d,", name, counts[i])
+		fmt.Fprintf(&sb, "%q:%d,", name, counts[i])
 	}
-	out += fmt.Sprintf("\"total\":%d,\"beats\":{", total)
+	fmt.Fprintf(&sb, "\"total\":%d,\"beats\":{", total)
 	for i, name := range trackNames {
 		if i > 0 {
-			out += ","
+			sb.WriteString(",")
 		}
 		b := beats[i]
-		out += fmt.Sprintf("%q:[%d,%d,%d,%d]", name, b[0], b[1], b[2], b[3])
+		fmt.Fprintf(&sb, "%q:[%d,%d,%d,%d]", name, b[0], b[1], b[2], b[1])
 	}
-	fmt.Fprintf(w, "%s}}\n", out)
+	sb.WriteString("}}\n")
+	io.WriteString(w, sb.String())
 }
