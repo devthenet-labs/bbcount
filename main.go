@@ -36,29 +36,42 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 2
 	}
 
-	in := stdin
 	if fs.NArg() == 1 {
-		f, err := os.Open(fs.Arg(0))
+		p, err := readPatternFile(fs.Arg(0))
 		if err != nil {
 			fmt.Fprintln(stderr, "bbcount:", err)
 			return 1
 		}
-		defer f.Close()
-		in = f
+		return report(stdout, stderr, p, *wavPath, *showTogether, *asJSON)
 	}
-	p, err := parsePattern(in)
+	p, err := parsePattern(stdin)
 	if err != nil {
 		fmt.Fprintln(stderr, "bbcount:", err)
 		return 1
 	}
+	return report(stdout, stderr, p, *wavPath, *asJSON, *showTogether)
+}
 
-	printCounts(stdout, p, *asJSON, *showTogether)
-	if *wavPath != "" {
-		if err := os.WriteFile(*wavPath, render(p), 0o644); err != nil {
+// readPatternFile parses the pattern in the named file, closing it before
+// returning so a slow WAV render does not hold the file open.
+func readPatternFile(path string) (pattern, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return pattern{}, err
+	}
+	defer f.Close()
+	return parsePattern(f)
+}
+
+// report prints the counts and, when wavPath is set, writes the WAV file.
+func report(stdout, stderr io.Writer, p pattern, wavPath string, asJSON, withTogether bool) int {
+	printCounts(stdout, p, asJSON, withTogether)
+	if wavPath != "" {
+		if err := os.WriteFile(wavPath, render(p), 0o644); err != nil {
 			fmt.Fprintln(stderr, "bbcount:", err)
 			return 1
 		}
-		fmt.Fprintf(stdout, "wrote %s (%d ms)\n", *wavPath, durationMs(p.BPM))
+		fmt.Fprintf(stdout, "wrote %s (%d ms)\n", wavPath, durationMs(p.BPM))
 	}
 	return 0
 }
