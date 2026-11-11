@@ -79,3 +79,20 @@ func TestBeatsWithWAV(t *testing.T) {
 		t.Errorf("stdout %q, want %q", out.String(), want)
 	}
 }
+
+func TestBeatsJSONAsymmetric(t *testing.T) {
+	mk := func(on ...int) []bool {
+		s := make([]bool, steps)
+		for _, n := range on {
+			s[n-1] = true
+		}
+		return s
+	}
+	p := pattern{Tracks: map[string][]bool{"kick": mk(4, 5), "snare": mk(12, 13, 16), "hat": mk()}}
+	var out bytes.Buffer
+	printReport(&out, p, true, true)
+	want := `{"kick":2,"snare":3,"hat":0,"total":5,"beats":{"kick":[1,1,0,0],"snare":[0,0,1,2],"hat":[0,0,0,0]}}` + "\n"
+	if out.String() != want {
+		t.Errorf("stdout %q, want %q", out.String(), want)
+	}
+}

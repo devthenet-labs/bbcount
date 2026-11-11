@@ -50,7 +50,7 @@ func printReport(w io.Writer, p pattern, asJSON, withBeats bool) {
 			sb.WriteString(",")
 		}
 		b := beats[i]
-		fmt.Fprintf(&sb, "%q:[%d,%d,%d,%d]", name, b[0], b[1], b[2], b[1])
+		fmt.Fprintf(&sb, "%q:[%d,%d,%d,%d]", name, b[0], b[1], b[2], b[3])
 	}
 	sb.WriteString("}}\n")
 	io.WriteString(w, sb.String())
