@@ -23,14 +23,20 @@ func (p pattern) offbeatCounts() []int {
 // printCountsOffbeat prints the counts like printCounts, plus each track's
 // off-beat count.
 func printCountsOffbeat(w io.Writer, p pattern, asJSON bool) {
-	off := p.offbeatCounts()
 	if !asJSON {
 		printCounts(w, p, false)
-		for i, name := range trackNames {
-			fmt.Fprintf(w, "offbeat %s %d\n", name, off[i])
+		n := 0
+		for _, name := range trackNames {
+			for j, on := range p.Tracks[name] {
+				if on && j%4 != 0 {
+					n++
+				}
+			}
+			fmt.Fprintf(w, "offbeat %s %d\n", name, n)
 		}
 		return
 	}
+	off := p.offbeatCounts()
 	counts := p.counts()
 	total := 0
 	out := "{"
