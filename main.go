@@ -27,6 +27,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 	asJSON := fs.Bool("json", false, "print the counts as one JSON object")
 	wavPath := fs.String("wav", "", "also write the pattern as a WAV file to this path")
+	withSpan := fs.Bool("span", false, "also print how many steps each track spans, from its first to its last playing step")
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
@@ -51,7 +52,11 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 1
 	}
 
-	printCounts(stdout, p, *asJSON)
+	if *withSpan {
+		printSpanCounts(stdout, p, *asJSON)
+	} else {
+		printCounts(stdout, p, *asJSON)
+	}
 	if *wavPath != "" {
 		if err := os.WriteFile(*wavPath, render(p), 0o644); err != nil {
 			fmt.Fprintln(stderr, "bbcount:", err)
