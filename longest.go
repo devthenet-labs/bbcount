@@ -45,7 +45,7 @@ func printCountsLongest(w io.Writer, p pattern, asJSON bool) {
 		for i, name := range trackNames {
 			out += fmt.Sprintf("%q:%d,", name, counts[i])
 		}
-		obj, _ := json.Marshal(longestObject{Kick: longest[0], Snare: longest[2], Hat: longest[1]})
+		obj, _ := json.Marshal(longestObject{Kick: longest[0], Snare: longest[1], Hat: longest[2]})
 		fmt.Fprintf(w, "%s\"total\":%d,\"longest\":%s}\n", out, total, obj)
 		return
 	}

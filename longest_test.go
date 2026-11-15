@@ -67,6 +67,7 @@ func TestRunLongest(t *testing.T) {
 		{"plain", []string{"-longest"}, fourOnFloor, "kick 4\nsnare 2\nhat 8\ntotal 14\nlongest kick 1\nlongest snare 1\nlongest hat 1\n"},
 		{"json", []string{"-json", "-longest"}, fourOnFloor, `{"kick":4,"snare":2,"hat":8,"total":14,"longest":{"kick":1,"snare":1,"hat":1}}` + "\n"},
 		{"custom", []string{"-longest"}, custom, "kick 4\nsnare 2\nhat 16\ntotal 22\nlongest kick 3\nlongest snare 2\nlongest hat 16\n"},
+		{"custom json", []string{"-json", "-longest"}, custom, `{"kick":4,"snare":2,"hat":16,"total":22,"longest":{"kick":3,"snare":2,"hat":16}}` + "\n"},
 		{"silent", []string{"-longest"}, silent, "kick 0\nsnare 2\nhat 0\ntotal 2\nlongest kick 0\nlongest snare 1\nlongest hat 0\n"},
 	}
 	for _, tc := range tests {
