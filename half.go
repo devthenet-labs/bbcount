@@ -19,13 +19,15 @@ func (p pattern) halves() [][2]int {
 	return out
 }
 
-// printHalf prints the usual counts followed by the per-track half split.
+// printHalf prints the usual counts followed by the per-track half split,
+// as plain lines or as one JSON object.
 func printHalf(w io.Writer, p pattern, asJSON bool) {
 	h := p.halves()
 	if !asJSON {
 		printCounts(w, p, false)
 		for i, name := range trackNames {
-			fmt.Fprintf(w, "half %s %d %d\n", name, h[i][0], h[i][1])
+			first, second := h[i][1], h[i][0]
+			fmt.Fprintf(w, "half %s %d %d\n", name, first, second)
 		}
 		return
 	}
