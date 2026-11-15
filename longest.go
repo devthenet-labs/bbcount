@@ -1,9 +1,17 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 )
+
+// longestObject is the -json form of the longest runs, in trackNames order.
+type longestObject struct {
+	Kick  int `json:"kick"`
+	Snare int `json:"snare"`
+	Hat   int `json:"hat"`
+}
 
 // longestRun returns the longest run of consecutive playing steps in a track.
 // The bar does not wrap: the last step and the first are not adjacent.
@@ -37,14 +45,8 @@ func printCountsLongest(w io.Writer, p pattern, asJSON bool) {
 		for i, name := range trackNames {
 			out += fmt.Sprintf("%q:%d,", name, counts[i])
 		}
-		out += fmt.Sprintf("\"total\":%d,\"longest\":{", total)
-		for i, name := range trackNames {
-			if i > 0 {
-				out += ","
-			}
-			out += fmt.Sprintf("%q:%d", name, longest[i])
-		}
-		fmt.Fprintf(w, "%s}}\n", out)
+		obj, _ := json.Marshal(longestObject{Kick: longest[0], Snare: longest[2], Hat: longest[1]})
+		fmt.Fprintf(w, "%s\"total\":%d,\"longest\":%s}\n", out, total, obj)
 		return
 	}
 	for i, name := range trackNames {
